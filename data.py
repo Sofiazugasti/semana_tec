@@ -4,33 +4,38 @@ import json
 if __name__ == "__main__":
     spark = SparkSession\
         .builder\
-        .appName("cars")\
+        .appName("makeup")\
         .getOrCreate()
 
     print("read dataset.csv ... ")
-    path_cars="dataset.csv"
-    df_cars = spark.read.csv(path_cars, header=True, inferSchema=True)
-    df_cars.createOrReplaceTempView("cars")
+    path_makeup = "dataset.csv"
+    df_makeup = spark.read.csv(path_makeup, header=True, inferSchema=True)
+    df_makeup.createOrReplaceTempView("makeup")
 
-    query = 'DESCRIBE cars'
+    # Describir la tabla
+    query = 'DESCRIBE makeup'
     spark.sql(query).show(20)
 
-    query = """SELECT mark, model, year FROM cars WHERE fuel == "diesel" ORDER BY year"""
-    df_cars_diesel = spark.sql(query)
-    df_cars_diesel.show(20)
+    # Seleccionar productos con "limited_edition" marcado como True, ordenados por precio
+    query = """SELECT product_name, brand_name, price_usd FROM makeup WHERE limited_edition = TRUE ORDER BY price_usd"""
+    df_limited_edition = spark.sql(query)
+    df_limited_edition.show(20)
 
-    query = 'SELECT mark, model, price FROM cars WHERE year BETWEEN 2000 AND 2010 ORDER BY price DESC'
-    df_cars_2000_2010 = spark.sql(query)
-    df_cars_2000_2010.show(20)
-    results = df_cars_2000_2010.toJSON().collect()
-    
-    df_cars_2000_2010.write.mode("overwrite").json("results")
-    
+    # Seleccionar productos con un precio entre 20 y 50 USD, ordenados de mayor a menor precio
+    query = 'SELECT product_name, brand_name, price_usd FROM makeup WHERE price_usd BETWEEN 20 AND 50 ORDER BY price_usd DESC'
+    df_mid_range = spark.sql(query)
+    df_mid_range.show(20)
+
+    # Guardar los resultados en JSON
+    results = df_mid_range.toJSON().collect()
+    df_mid_range.write.mode("overwrite").json("results")
+
     with open('results/data.json', 'w') as file:
         json.dump(results, file)
 
-    query = 'SELECT fuel, COUNT(fuel) FROM cars WHERE year BETWEEN 1990 AND 2000 GROUP BY fuel'
-    df_cars_90s_fuel = spark.sql(query)
-    df_cars_90s_fuel.show()
+    # Contar productos por categoría primaria
+    query = 'SELECT primary_category, COUNT(*) as count FROM makeup GROUP BY primary_category ORDER BY count DESC'
+    df_category_count = spark.sql(query)
+    df_category_count.show()
     
     spark.stop()
