@@ -45,7 +45,7 @@ jobs:
     - name: GIT commit and push docs
       env: 
         CI_COMMIT_MESSAGE: save spark results
-        CI_COMMIT_AUTHOR: humbertopg 
+        CI_COMMIT_AUTHOR: sofiazugasti 
       run: |
         git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
         git config --global user.email "A00837478@tec.mx"
